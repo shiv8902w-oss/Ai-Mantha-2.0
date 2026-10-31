@@ -1,0 +1,23 @@
+{
+    "model_name": "EEG_1D_CNN_Denoiser",
+    "sampling_rate": 256,
+    "window_size": 512,
+    "duration_seconds": 2,
+    "channels": 1,
+    "architecture": "Residual 1D CNN",
+    "artifact_training": [
+        "EOG"
+    ],
+    "normalization": "RMS of noisy input; same scale used for target",
+    "input_shape": [
+        1,
+        1,
+        512
+    ],
+    "output_shape": [
+        1,
+        1,
+        512
+    ],
+    "framework": "PyTorch"
+}

@@ -54,9 +54,9 @@ export const PortalHero: React.FC = () => {
   // Wordmark signature move:
   // Title scales UP (from 1.0 to 1.35) while letter-spacing simultaneously TIGHTENS
   const titleScale = 1.0 + scrollProgress * 0.35;
-  const letterSpacing = 0.02 - scrollProgress * 0.06; // from 0.02em to -0.04em
-  const leftSpanTransform = `translateX(-${scrollProgress * 52}%)`;
-  const rightSpanTransform = `translateX(${scrollProgress * 52}%)`;
+  const letterSpacing = -0.02 - scrollProgress * 0.03; // from -0.02em to -0.05em
+  const leftSpanTransform = `translateX(-${scrollProgress * 55}%)`;
+  const rightSpanTransform = `translateX(${scrollProgress * 55}%)`;
 
   // Accent dots travel out toward opposite corners of the field
   const dot1X = 50 - scrollProgress * 38; // 50% -> 12%
@@ -130,15 +130,10 @@ export const PortalHero: React.FC = () => {
             <span 
               className="portal-word-left"
               style={{ transform: leftSpanTransform }}
-            >
-              NEURO
-            </span>
-            <span 
+            >NEURO</span><span 
               className="portal-word-right"
               style={{ transform: rightSpanTransform }}
-            >
-              SYNAPSE
-            </span>
+            >SYNC</span>
           </h1>
         </div>
 

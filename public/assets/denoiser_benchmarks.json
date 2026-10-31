@@ -1,0 +1,44 @@
+{
+  "total_eval_samples": 2712,
+  "mean_snr_improvement": 7.97,
+  "mean_rmse": 0.2341,
+  "mean_correlation": 0.9435,
+  "by_snr_group": [
+    {
+      "test_snr_db": -5,
+      "input_snr_mean": -5.0,
+      "output_snr_mean": 8.49,
+      "snr_improvement_mean": 13.49,
+      "rmse_mean": 0.1928,
+      "correlation_mean": 0.9181,
+      "samples_count": 678
+    },
+    {
+      "test_snr_db": 0,
+      "input_snr_mean": 0.0,
+      "output_snr_mean": 10.11,
+      "snr_improvement_mean": 10.11,
+      "rmse_mean": 0.2333,
+      "correlation_mean": 0.9419,
+      "samples_count": 678
+    },
+    {
+      "test_snr_db": 5,
+      "input_snr_mean": 5.0,
+      "output_snr_mean": 11.15,
+      "snr_improvement_mean": 6.15,
+      "rmse_mean": 0.2575,
+      "correlation_mean": 0.9527,
+      "samples_count": 678
+    },
+    {
+      "test_snr_db": 10,
+      "input_snr_mean": 10.0,
+      "output_snr_mean": 12.13,
+      "snr_improvement_mean": 2.13,
+      "rmse_mean": 0.253,
+      "correlation_mean": 0.9612,
+      "samples_count": 678
+    }
+  ]
+}

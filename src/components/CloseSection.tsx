@@ -54,7 +54,7 @@ export const CloseSection: React.FC = () => {
             <span>//</span>
             <span>LATENCY: 14.2 MS</span>
             <span>//</span>
-            <span>© 2026 NEUROSYNAPSE</span>
+            <span>© 2026 NEUROSYNC</span>
           </div>
         </div>
       </div>
@@ -62,7 +62,7 @@ export const CloseSection: React.FC = () => {
       {/* Cropped Full-Width Wordmark at the Bottom Page Edge */}
       <div className="close-cropped-wordmark-wrap" aria-hidden="true">
         <span className="close-cropped-wordmark">
-          NEUROSYNAPSE
+          NEUROSYNC
         </span>
       </div>
     </footer>

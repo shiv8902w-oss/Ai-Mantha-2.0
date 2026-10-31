@@ -1,97 +1,69 @@
 import React from 'react';
 
 interface NavbarProps {
-  onScrollToSection: (sectionId: string) => void;
-  onActivateBci: () => void;
+  currentPage: 'home' | 'dashboard' | 'denoiser';
+  onNavigate: (page: 'home' | 'dashboard' | 'denoiser') => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onScrollToSection, onActivateBci }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
   return (
     <header className="site-nav" role="banner">
-      <div className="nav-container">
-        <div className="nav-brand">
-          <a 
-            href="#hero" 
-            onClick={(e) => {
-              e.preventDefault();
-              onScrollToSection('hero');
-            }}
-            className="nav-wordmark"
-            aria-label="NEUROSYNC Home"
-          >
-            NEUROSYNC<span className="nav-period">.</span>
-          </a>
-        </div>
-
-        <nav className="nav-links" aria-label="Primary Navigation">
-          <li className="nav-link-item">
-            <a 
-              href="#statement"
-              onClick={(e) => {
-                e.preventDefault();
-                onScrollToSection('statement');
-              }}
-            >
-              [01] PARADIGM
-            </a>
-          </li>
-          <li className="nav-link-item">
-            <a 
-              href="#releases"
-              onClick={(e) => {
-                e.preventDefault();
-                onScrollToSection('releases');
-              }}
-            >
-              [02] PIPELINE SLEEVES
-            </a>
-          </li>
-          <li className="nav-link-item">
-            <a 
-              href="#bci-lab"
-              onClick={(e) => {
-                e.preventDefault();
-                onScrollToSection('bci-lab');
-              }}
-            >
-              [03] VIRTUAL INTERFACE
-            </a>
-          </li>
-          <li className="nav-link-item">
-            <a 
-              href="#roster"
-              onClick={(e) => {
-                e.preventDefault();
-                onScrollToSection('roster');
-              }}
-            >
-              [04] ROSTER
-            </a>
-          </li>
-          <li className="nav-link-item">
-            <a 
-              href="#dates"
-              onClick={(e) => {
-                e.preventDefault();
-                onScrollToSection('dates');
-              }}
-            >
-              [05] BENCHMARKS
-            </a>
-          </li>
-        </nav>
-
-        <div>
+      <div className="nav-container-corners">
+        {/* Corner Left: Website Name */}
+        <div className="nav-left-brand">
           <button 
             type="button" 
-            className="nav-pill-btn"
-            onClick={onActivateBci}
-            aria-label="Activate Live BCI Interface"
+            onClick={() => onNavigate('home')} 
+            className="nav-brand-kinetic"
+            aria-label="NEUROSYNC Home"
           >
-            <span className="nav-pill-dot" />
-            LIVE BCI PROTO
+            <span className="brand-wordmark">NEUROSYNC</span>
+            <span className="brand-dot">.</span>
           </button>
         </div>
+
+        {/* Center-Aligned: HOME, DASHBOARD, and MODEL EEG with Kinetic Font Move Animation */}
+        <nav className="nav-center-group" aria-label="Main Navigation">
+          <button
+            type="button"
+            className={`nav-kinetic-btn ${currentPage === 'home' ? 'active' : ''}`}
+            onClick={() => onNavigate('home')}
+            aria-current={currentPage === 'home' ? 'page' : undefined}
+          >
+            <span className="font-roll-wrap">
+              <span className="font-roll-item primary">HOME</span>
+              <span className="font-roll-item secondary">HOME</span>
+            </span>
+          </button>
+
+          <span className="nav-center-divider" aria-hidden="true">•</span>
+
+          <button
+            type="button"
+            className={`nav-kinetic-btn ${currentPage === 'dashboard' ? 'active' : ''}`}
+            onClick={() => onNavigate('dashboard')}
+            aria-current={currentPage === 'dashboard' ? 'page' : undefined}
+          >
+            <span className="font-roll-wrap">
+              <span className="font-roll-item primary">DASHBOARD</span>
+              <span className="font-roll-item secondary">DASHBOARD</span>
+            </span>
+          </button>
+
+          <span className="nav-center-divider" aria-hidden="true">•</span>
+
+          <button
+            type="button"
+            className={`nav-kinetic-btn ${currentPage === 'denoiser' ? 'active' : ''}`}
+            onClick={() => onNavigate('denoiser')}
+            aria-current={currentPage === 'denoiser' ? 'page' : undefined}
+          >
+            <span className="font-roll-wrap">
+              <span className="font-roll-item primary">MODEL EEG</span>
+              <span className="font-roll-item secondary">MODEL EEG</span>
+            </span>
+          </button>
+        </nav>
       </div>
     </header>
   );

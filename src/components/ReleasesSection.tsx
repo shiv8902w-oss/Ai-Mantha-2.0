@@ -4,17 +4,19 @@ import { ThrowableDeck } from './ThrowableDeck';
 interface ReleasesSectionProps {
   onExploreArchitecture: () => void;
   onLaunchVirtualInterface: () => void;
+  onOpenDenoiser?: () => void;
 }
 
 export const ReleasesSection: React.FC<ReleasesSectionProps> = ({
   onExploreArchitecture,
-  onLaunchVirtualInterface
+  onLaunchVirtualInterface,
+  onOpenDenoiser
 }) => {
   return (
     <section id="releases" className="releases-section" aria-label="Neural Pipeline Sleeves">
       <div className="releases-container">
         <div className="releases-two-col">
-          {/* Left Column: Headline, Lede, Two Buttons */}
+          {/* Left Column: Headline, Lede, Buttons */}
           <div className="releases-info">
             <div className="releases-meta">
               <span className="meta-accent-dot" />
@@ -26,11 +28,11 @@ export const ReleasesSection: React.FC<ReleasesSectionProps> = ({
             </h2>
 
             <p className="releases-lede">
-              The processing core is built as a chain of five specialized neuro-modules. 
-              Starting from raw 128Hz multi-channel microvolt signals over the primary motor cortex 
-              (C3, Cz, C4), each stage isolates frequency bands, suppresses artifacts, projects 
-              spatial variance, and executes neural inference under 18 milliseconds. Flip through 
-              the physical sleeve deck to inspect each stage of the pipeline.
+              The processing core is built as a chain of specialized neuro-modules. 
+              Starting from raw multi-channel microvolt signals over the primary motor cortex 
+              (C3, Cz, C4), the pipeline integrates our exported <strong>EEG-1D-CNN Denoiser</strong> to 
+              suppress ocular/EOG artifacts, isolate sensorimotor rhythms, and execute real-time intent decoding 
+              under 18 milliseconds. Flip through the physical sleeve deck to inspect each stage of the pipeline.
             </p>
 
             <div className="releases-actions">
@@ -43,12 +45,22 @@ export const ReleasesSection: React.FC<ReleasesSectionProps> = ({
                 LAUNCH VIRTUAL INTERFACE
               </button>
               
+              {onOpenDenoiser && (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={onOpenDenoiser}
+                >
+                  MODEL EEG (DENOISER) →
+                </button>
+              )}
+
               <button
                 type="button"
                 className="btn-ghost"
                 onClick={onExploreArchitecture}
               >
-                VIEW ARCHITECTURE ROSTER →
+                VIEW ROSTER →
               </button>
             </div>
           </div>
