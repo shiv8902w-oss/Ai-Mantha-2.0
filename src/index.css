@@ -544,7 +544,8 @@ button {
   font-size: clamp(64px, 10vw, 140px);
   font-weight: 800;
   line-height: 0.9;
-  -webkit-text-stroke: 1.5px rgba(237, 231, 220, 0.22);
+  -webkit-text-stroke: 2px #FFFFFF;
+  text-stroke: 2px #FFFFFF;
   color: transparent;
   user-select: none;
   margin-bottom: 16px;
@@ -3452,8 +3453,13 @@ button {
 }
 
 @keyframes pulse-indeterminate {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* ==========================================================================
@@ -3830,4 +3836,337 @@ button {
   .neuro-canvas {
     height: 220px;
   }
+}
+
+/* ==========================================================================
+   LIVE BCI DECODER DEMO SECTION (Problem Statement 3 Closed-Loop Intent Deck)
+   Clean Blue, Black & White Theme (No AI-Generated Neon Glows)
+   ========================================================================== */
+
+.decoder-demo-section {
+  position: relative;
+  width: 100%;
+  padding: 56px 32px 64px;
+  background-color: #0A0C0E;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.decoder-demo-container {
+  width: 100%;
+  max-width: var(--max-width, 1360px);
+  margin: 0 auto;
+}
+
+.decoder-section-header {
+  margin-bottom: 32px;
+}
+
+.decoder-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ws-live-pill {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  background: rgba(0, 153, 255, 0.1);
+  color: #0099FF;
+  border: 1px solid rgba(0, 153, 255, 0.3);
+  padding: 3px 8px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ws-live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #0099FF;
+}
+
+/* BIG Display Heading */
+.decoder-section-title {
+  font-family: var(--font-display, "Syne", sans-serif);
+  font-size: clamp(34px, 4.4vw, 56px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #FFFFFF;
+  line-height: 1.05;
+  text-transform: uppercase;
+  margin: 6px 0 10px;
+}
+
+.decoder-section-subtitle {
+  font-family: var(--font-sans, sans-serif);
+  font-size: 14px;
+  color: #8A9096;
+  max-width: 620px;
+  line-height: 1.55;
+}
+
+/* Two-column grid: 1.5fr / 1fr, stacked under 860px */
+.decoder-two-col-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+@media (max-width: 860px) {
+  .decoder-two-col-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Clean Cards: Dark #111317 with subtle 1px border (Zero neon glow) */
+.decoder-card {
+  background-color: #111317;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.decoder-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Top HUD Row */
+.decoder-hud-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hud-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hud-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #71777E;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.hud-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #FFFFFF;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+.hud-value.intent-highlight {
+  color: #0099FF;
+  font-weight: 800;
+}
+
+/* Arena: Clean subtle dot grid */
+.decoder-arena {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  background-color: #090B0E;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  overflow: hidden;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+  user-select: none;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+/* Target: Clean 36px circle with dashed blue border and solid blue inner dot */
+.decoder-target {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border: 2px dashed #0099FF;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1), top 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.decoder-target-inner-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #0099FF;
+  border-radius: 50%;
+}
+
+/* Mouse cursor: crisp white arrow shape with drop shadow */
+.decoder-cursor {
+  position: absolute;
+  width: 20px;
+  height: 24px;
+  transform: translate(-2px, -2px);
+  pointer-events: none;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.8));
+  transition: left 0.22s ease-out, top 0.22s ease-out;
+  will-change: left, top;
+  z-index: 5;
+}
+
+.decoder-note {
+  font-size: 11.5px;
+  color: #71777E;
+  margin-top: 14px;
+  line-height: 1.45;
+  font-family: var(--font-sans);
+}
+
+.decoder-note code {
+  font-family: var(--font-mono);
+  color: #0099FF;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Right Card: Class probabilities */
+.probs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.probs-header-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #8A9096;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.probs-header-sub {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #71777E;
+  font-family: var(--font-mono);
+}
+
+.probs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+/* 3-column grid: label | 6px-high progress bar | percentage */
+.prob-row {
+  display: grid;
+  grid-template-columns: 52px 1fr 44px;
+  align-items: center;
+  gap: 14px;
+}
+
+.prob-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+}
+
+.prob-track {
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.prob-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.prob-fill.fill-top {
+  background-color: #0099FF;
+}
+
+.prob-fill.fill-muted {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.prob-percent {
+  font-size: 13px;
+  color: #FFFFFF;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+/* Clean Toggle Buttons (High Contrast Black / White / Blue) */
+.decoder-toggles-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.decoder-toggles {
+  display: flex;
+  gap: 10px;
+}
+
+.decoder-toggle-btn {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #16181D;
+  color: #8A9096;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.decoder-toggle-btn:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+.decoder-toggle-btn.active {
+  background-color: #FFFFFF;
+  color: #0A0C0E;
+  border-color: #FFFFFF;
+  font-weight: 700;
+}
+
+.decoder-mode-hint {
+  font-size: 11px;
+  color: #71777E;
+  font-family: var(--font-mono);
 }

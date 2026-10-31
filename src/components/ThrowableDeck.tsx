@@ -88,7 +88,7 @@ export const ThrowableDeck: React.FC = () => {
   // Function to execute a throw
   const executeThrow = useCallback((direction: 'left' | 'right') => {
     setTossingState({ direction });
-    
+
     setTimeout(() => {
       setDeckIndices((prev) => {
         const next = [...prev];

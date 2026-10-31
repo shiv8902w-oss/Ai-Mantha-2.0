@@ -11,9 +11,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
       <div className="nav-container-corners">
         {/* Corner Left: Website Name */}
         <div className="nav-left-brand">
-          <button 
-            type="button" 
-            onClick={() => onNavigate('home')} 
+          <button
+            type="button"
+            onClick={() => onNavigate('home')}
             className="nav-brand-kinetic"
             aria-label="NEUROSYNC Home"
           >

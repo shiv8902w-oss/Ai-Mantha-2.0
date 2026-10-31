@@ -265,12 +265,12 @@ export const BciVirtualInterface: React.FC = () => {
 
         for (let x = 85; x < width; x += 3) {
           const t = (x / width) * 12 + wavePhase.current;
-          
+
           // Primary rhythm (Mu/Beta)
           let y = Math.sin(t * (ch.baseFreq * 0.18)) * amp;
           // Beta harmonic
           y += Math.sin(t * 3.8 + idx) * (amp * 0.45);
-          
+
           // Noise component
           if (noiseLevel > 0) {
             const noise = (Math.sin(t * 19.3 + idx * 7) + Math.cos(t * 31.7)) * (noiseLevel * 0.22);

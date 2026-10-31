@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live BCI Decoder Demo // EEG Motor-Imagery</title>
+  <style>
+    /* THEME: Clean Blue, Black & White */
+    :root {
+      --bg: #0A0C0E;
+      --card-bg: #111317;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #FFFFFF;
+      --muted: #8A9096;
+      --accent: #0099FF;
+      --track-muted: rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .decoder-container {
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    /* Responsive Two Columns */
+    .decoder-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 860px) {
+      .decoder-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Card styling: #111110 with 1px #242322 border and 24px radius */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Typography & Labels */
+    .label-uppercase {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* Left Card: Top HUD Row */
+    .hud-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hud-metric {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .hud-val {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hud-val.intent-val {
+      color: var(--accent);
+    }
+
+    /* Arena: aspect-ratio 16/10, 16px radius, 1px border, dot grid */
+    .arena {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      background-color: #0c0c0b;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      background-image: radial-gradient(rgba(242, 239, 233, 0.08) 1.5px, transparent 1.5px);
+      background-size: 28px 28px;
+      user-select: none;
+    }
+
+    /* Target: 44px circle with dashed orange border and solid orange inner dot */
+    .target {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border: 2px dashed var(--accent);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1), top 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .target-dot {
+      width: 10px;
+      height: 10px;
+      background-color: var(--accent);
+      border-radius: 50%;
+    }
+
+    /* Mouse Cursor: white arrow shape with drop shadow */
+    .cursor {
+      position: absolute;
+      width: 20px;
+      height: 24px;
+      transform: translate(-4px, -2px);
+      pointer-events: none;
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.7));
+      transition: left 0.22s ease-out, top 0.22s ease-out;
+      will-change: left, top;
+    }
+
+    .cursor svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .arena-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 16px;
+      line-height: 1.5;
+    }
+
+    .arena-note code {
+      font-family: monospace;
+      color: var(--text);
+    }
+
+    /* Right Card: Class probabilities */
+    .header-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .probs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    /* 3-column grid: label | 6px-high progress bar | percentage */
+    .prob-row {
+      display: grid;
+      grid-template-columns: 56px 1fr 48px;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .prob-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .prob-track {
+      height: 6px;
+      background-color: var(--track-muted);
+      border-radius: 9999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .prob-bar {
+      height: 100%;
+      width: 25%;
+      background-color: var(--muted);
+      border-radius: 9999px;
+      transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.25s ease;
+    }
+
+    .prob-bar.is-top {
+      background-color: var(--accent);
+    }
+
+    .prob-val {
+      font-size: 13.5px;
+      color: var(--text);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    /* Toggle Buttons */
+    .toggle-row {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .toggle-btn.active {
+      background-color: #f2efe9;
+      color: #0e0e0d;
+      border-color: #f2efe9;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="decoder-container">
+    <div class="decoder-grid">
+
+      <!-- Left Card: HUD & Arena -->
+      <div class="card">
+        <div>
+          <!-- Top HUD Row -->
+          <div class="hud-row">
+            <div class="hud-metric">
+              <span class="label-uppercase">Hits</span>
+              <span class="hud-val" id="hud-hits">0</span>
+            </div>
+            <div class="hud-metric">
+              <span class="label-uppercase">Latency</span>
+              <span class="hud-val" id="hud-latency">–</span>
+            </div>
+            <div class="hud-metric">
+              <span class="label-uppercase">Intent</span>
+              <span class="hud-val intent-val" id="hud-intent">–</span>
+            </div>
+          </div>
+
+          <!-- Arena -->
+          <div class="arena" id="arena">
+            <!-- Target -->
+            <div class="target" id="target">
+              <div class="target-dot"></div>
+            </div>
+
+            <!-- Arrow Mouse Cursor -->
+            <div class="cursor" id="cursor">
+              <svg viewBox="0 0 24 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 2L19.5 15.5L11.5 16.5L8.5 24L3 2Z" fill="#FFFFFF" stroke="#111110" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Muted Note -->
+        <p class="arena-note">
+          Simulated classifier stream. Arrow keys also steer. Plug your trained model into <code>onIntent()</code>.
+        </p>
+      </div>
+
+      <!-- Right Card: Class probabilities -->
+      <div class="card">
+        <div>
+          <div class="header-title">Class probabilities</div>
+
+          <div class="probs-list">
+            <!-- Left -->
+            <div class="prob-row">
+              <span class="prob-label">Left</span>
+              <div class="prob-track">
+                <div class="prob-bar" id="bar-left" style="width: 25%"></div>
+              </div>
+              <span class="prob-val" id="val-left">25%</span>
+            </div>
+
+            <!-- Right -->
+            <div class="prob-row">
+              <span class="prob-label">Right</span>
+              <div class="prob-track">
+                <div class="prob-bar" id="bar-right" style="width: 25%"></div>
+              </div>
+              <span class="prob-val" id="val-right">25%</span>
+            </div>
+
+            <!-- Up -->
+            <div class="prob-row">
+              <span class="prob-label">Up</span>
+              <div class="prob-track">
+                <div class="prob-bar" id="bar-up" style="width: 25%"></div>
+              </div>
+              <span class="prob-val" id="val-up">25%</span>
+            </div>
+
+            <!-- Down -->
+            <div class="prob-row">
+              <span class="prob-label">Down</span>
+              <div class="prob-track">
+                <div class="prob-bar" id="bar-down" style="width: 25%"></div>
+              </div>
+              <span class="prob-val" id="val-down">25%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toggle Buttons -->
+        <div class="toggle-row">
+          <button type="button" class="toggle-btn active" id="btn-auto">Auto decode</button>
+          <button type="button" class="toggle-btn" id="btn-manual">Manual</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // State
+    const CLASSES = ['Left', 'Right', 'Up', 'Down'];
+    let hits = 0;
+    let mode = 'auto'; // 'auto' | 'manual'
+    let autoInterval = null;
+
+    let cursor = { x: 50, y: 50 };
+    let target = { x: 80, y: 30 };
+
+    // DOM Elements
+    const elHits = document.getElementById('hud-hits');
+    const elLatency = document.getElementById('hud-latency');
+    const elIntent = document.getElementById('hud-intent');
+    const elCursor = document.getElementById('cursor');
+    const elTarget = document.getElementById('target');
+
+    const bars = {
+      Left: document.getElementById('bar-left'),
+      Right: document.getElementById('bar-right'),
+      Up: document.getElementById('bar-up'),
+      Down: document.getElementById('bar-down')
+    };
+
+    const vals = {
+      Left: document.getElementById('val-left'),
+      Right: document.getElementById('val-right'),
+      Up: document.getElementById('val-up'),
+      Down: document.getElementById('val-down')
+    };
+
+    const btnAuto = document.getElementById('btn-auto');
+    const btnManual = document.getElementById('btn-manual');
+
+    // put() renders positions
+    function put() {
+      elCursor.style.left = cursor.x + '%';
+      elCursor.style.top = cursor.y + '%';
+
+      elTarget.style.left = target.x + '%';
+      elTarget.style.top = target.y + '%';
+    }
+
+    // show(probs, latency) updates the UI and returns the top class
+    function show(probArray, latVal) {
+      if (latVal !== undefined && latVal !== null && latVal !== '–') {
+        elLatency.textContent = latVal + ' ms';
+      } else {
+        elLatency.textContent = '–';
+      }
+
+      let maxVal = -1;
+      let topClass = CLASSES[0];
+
+      CLASSES.forEach((cls, i) => {
+        const p = probArray[i];
+        const pct = Math.round(p * 100);
+        bars[cls].style.width = pct + '%';
+        vals[cls].textContent = pct + '%';
+
+        if (p > maxVal) {
+          maxVal = p;
+          topClass = cls;
+        }
+      });
+
+      // Highlight the top probability bar in orange
+      CLASSES.forEach(cls => {
+        if (cls === topClass) {
+          bars[cls].classList.add('is-top');
+        } else {
+          bars[cls].classList.remove('is-top');
+        }
+      });
+
+      elIntent.textContent = topClass.toUpperCase();
+      return topClass;
+    }
+
+    // probs(best) generates fake probabilities favoring the chosen class
+    function probs(best) {
+      const raw = CLASSES.map(c => Math.random() * 0.25 + (c === best ? 0.5 : 0));
+      const sum = raw.reduce((a, b) => a + b, 0);
+      return raw.map(v => v / sum);
+    }
+
+    // onIntent(dir) moves the cursor
+    function onIntent(dir) {
+      if (dir === 'Left') cursor.x -= 9;
+      if (dir === 'Right') cursor.x += 9;
+      if (dir === 'Up') cursor.y -= 9;
+      if (dir === 'Down') cursor.y += 9;
+
+      // Clamp horizontally 4-96% and vertically 6-94%
+      cursor.x = Math.max(4, Math.min(96, cursor.x));
+      cursor.y = Math.max(6, Math.min(94, cursor.y));
+
+      put();
+
+      // Distance check with Y axis scaled by 0.62 for 16/10 aspect ratio
+      const dist = Math.hypot(cursor.x - target.x, (cursor.y - target.y) * 0.62);
+      if (dist < 6.0) {
+        hits++;
+        elHits.textContent = hits;
+        target.x = 10 + Math.random() * 80;
+        target.y = 12 + Math.random() * 76;
+        put();
+      }
+    }
+
+    // Auto decode step
+    function stepAuto() {
+      const dx = target.x - cursor.x;
+      const dy = target.y - cursor.y;
+
+      let best;
+      if (Math.abs(dx) > 1.6 * Math.abs(dy)) {
+        best = dx > 0 ? 'Right' : 'Left';
+      } else {
+        best = dy > 0 ? 'Down' : 'Up';
+      }
+
+      // 15% chance to simulate classifier error
+      if (Math.random() < 0.15) {
+        best = CLASSES[Math.floor(Math.random() * 4)];
+      }
+
+      /*
+       * NOTE: PLUG REAL MODEL INFERENCE HERE
+       * Replace probs(best) with your model's softmax predictions.
+       */
+      const p = probs(best);
+      const lat = Math.floor(38 + Math.random() * 27); // 38 - 64 ms
+
+      const topClass = show(p, lat);
+      onIntent(topClass);
+    }
+
+    function setMode(newMode) {
+      mode = newMode;
+      if (mode === 'auto') {
+        btnAuto.classList.add('active');
+        btnManual.classList.remove('active');
+        if (!autoInterval) {
+          autoInterval = setInterval(stepAuto, 650);
+        }
+      } else {
+        btnManual.classList.add('active');
+        btnAuto.classList.remove('active');
+        if (autoInterval) {
+          clearInterval(autoInterval);
+          autoInterval = null;
+        }
+      }
+    }
+
+    btnAuto.addEventListener('click', () => setMode('auto'));
+    btnManual.addEventListener('click', () => setMode('manual'));
+
+    // Manual keyboard controls (Arrow keys)
+    window.addEventListener('keydown', (e) => {
+      const keys = {
+        ArrowLeft: 'Left',
+        ArrowRight: 'Right',
+        ArrowUp: 'Up',
+        ArrowDown: 'Down'
+      };
+
+      if (keys[e.key]) {
+        e.preventDefault();
+        const dir = keys[e.key];
+        const p = probs(dir);
+        const lat = Math.floor(40 + Math.random() * 20);
+        show(p, lat);
+        onIntent(dir);
+      }
+    });
+
+    // WebSocket client to ws://localhost:8765 with simulation fallback
+    (function initWebSocket() {
+      let ws;
+      try {
+        ws = new WebSocket('ws://localhost:8765');
+        ws.onopen = () => {
+          console.log('[BCI Demo] Connected to ws://localhost:8765');
+        };
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (Array.isArray(data.probs) && data.probs.length === 4) {
+              const lat = data.latency_ms || 52;
+              const top = show(data.probs, lat);
+              onIntent(top);
+            }
+          } catch (err) {
+            console.error('[BCI Demo] Error parsing socket data', err);
+          }
+        };
+        ws.onerror = () => {
+          // Fall back gracefully to simulation
+        };
+      } catch (err) {
+        // Fall back gracefully to simulation
+      }
+    })();
+
+    // Initial render
+    put();
+    setMode('auto');
+  </script>
+</body>
+</html>

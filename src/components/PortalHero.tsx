@@ -70,15 +70,15 @@ export const PortalHero: React.FC = () => {
       <div className="portal-stage">
         {/* Layer 1: Full-bleed image starting overscaled */}
         <img
-          src="/assets/hero-bci.jpg"
-          alt="Neural EEG Brain-Computer Interface Laboratory"
+          src="/assets/neural-network.png"
+          alt="Biological and Artificial Neural Network"
           className="portal-bg-media"
           style={{ transform: `scale(${imageScale})` }}
         />
 
         {/* Layer 2: Duotone wash blending two accents at mix-blend-mode overlay */}
-        <div 
-          className="portal-duotone-wash" 
+        <div
+          className="portal-duotone-wash"
           style={{ opacity: duotoneOpacity }}
           aria-hidden="true"
         />
@@ -87,12 +87,12 @@ export const PortalHero: React.FC = () => {
         <div className="portal-radial-veil" aria-hidden="true" />
 
         {/* Layer 4: TWO solid panels meeting in the middle, parting outward */}
-        <div 
+        <div
           className="portal-panel left-panel"
           style={{ transform: leftPanelTransform }}
           aria-hidden="true"
         />
-        <div 
+        <div
           className="portal-panel right-panel"
           style={{ transform: rightPanelTransform }}
           aria-hidden="true"
@@ -120,17 +120,17 @@ export const PortalHero: React.FC = () => {
 
         {/* Layer 6: Wordmark on top, split into two spans */}
         <div className="portal-title-wrapper">
-          <h1 
+          <h1
             className="portal-title"
             style={{
               transform: `scale(${titleScale})`,
               letterSpacing: `${letterSpacing}em`
             }}
           >
-            <span 
+            <span
               className="portal-word-left"
               style={{ transform: leftSpanTransform }}
-            >NEURO</span><span 
+            >NEURO</span><span
               className="portal-word-right"
               style={{ transform: rightSpanTransform }}
             >SYNC</span>

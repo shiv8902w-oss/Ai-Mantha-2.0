@@ -3,6 +3,7 @@ import { Navbar } from './components/Navbar';
 import { PortalHero } from './components/PortalHero';
 import { StatementFold } from './components/StatementFold';
 import { ReleasesSection } from './components/ReleasesSection';
+import { LiveBciDecoderDemo } from './components/LiveBciDecoderDemo';
 import { BciVirtualInterface } from './components/BciVirtualInterface';
 import { RosterSection } from './components/RosterSection';
 import { DatesTableSection } from './components/DatesTableSection';
@@ -58,6 +59,9 @@ export const App: React.FC = () => {
             onLaunchVirtualInterface={() => scrollToSection('bci-lab')}
             onOpenDenoiser={() => handleNavigate('denoiser')}
           />
+
+          {/* Section 3.5: Live BCI Decoder Demo (Hits, Latency, Intent, 16:10 Arena, 4-Class Probabilities) */}
+          <LiveBciDecoderDemo />
 
           {/* Section 4: Interactive BCI Virtual Interface Prototype (Problem Statement 3 Core Demo) */}
           <BciVirtualInterface />
