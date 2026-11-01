@@ -154,21 +154,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) =
     {
       id: 'dev-kit' as const,
       name: 'Developer Kit',
-      price: '$499 USD',
       badge: 'RECOMMENDED',
       desc: '3-Channel Sensorimotor Montage (C3/Cz/C4), 128Hz BLE Streamer, Python SDK + Quantized EEGNet weights.'
     },
     {
       id: 'clinical' as const,
       name: 'Research & Clinical Edition',
-      price: '$1,299 USD',
       badge: 'ENTERPRISE',
       desc: '8-Channel High-SNR Montage, 1D-CNN Real-Time Denoising Hardware unit, Multi-Subject Calibration Suite.'
     },
     {
       id: 'assistive' as const,
       name: 'Assistive Autonomy Unit',
-      price: '$849 USD',
       badge: 'ASSISTIVE TECH',
       desc: 'Ergonomic Wearable Headset, Kalman Velocity 2D Interface, Matrix Speller with 600ms dwell confirmation.'
     }
@@ -205,7 +202,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) =
 
             <h3 className="booking-success-title">RESERVATION CONFIRMED</h3>
             <p className="booking-success-sub">
-              Your hardware slot in Batch 01 has been registered. An allocation verification package and invoice details have been dispatched to <strong>{formData.email}</strong>.
+              Your hardware slot in Batch 01 has been registered. An allocation verification package and reservation confirmation have been dispatched to <strong>{formData.email}</strong>.
             </p>
 
             <div className="booking-summary-card">
@@ -219,7 +216,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) =
               </div>
               <div className="summary-row">
                 <span className="summary-label">HARDWARE PACKAGE:</span>
-                <span className="summary-val">{selectedTierObj.name} ({selectedTierObj.price})</span>
+                <span className="summary-val">{selectedTierObj.name}</span>
               </div>
               <div className="summary-row">
                 <span className="summary-label">QUANTITY:</span>
@@ -302,7 +299,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) =
                     >
                       <div className="tier-card-top">
                         <span className="tier-badge">{tier.badge}</span>
-                        <span className="tier-price font-mono">{tier.price}</span>
                       </div>
                       <h4 className="tier-name">{tier.name}</h4>
                       <p className="tier-desc">{tier.desc}</p>
