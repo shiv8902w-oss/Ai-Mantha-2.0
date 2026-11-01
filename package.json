@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "server": "python scripts/denoiser_server.py",
+    "server": "python api/index.py",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
