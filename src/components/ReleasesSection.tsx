@@ -2,7 +2,7 @@ import React from 'react';
 import { ThrowableDeck } from './ThrowableDeck';
 
 interface ReleasesSectionProps {
-  onExploreArchitecture: () => void;
+  onExploreArchitecture?: () => void;
   onLaunchVirtualInterface: () => void;
   onOpenDenoiser?: () => void;
 }
@@ -55,13 +55,15 @@ export const ReleasesSection: React.FC<ReleasesSectionProps> = ({
                 </button>
               )}
 
-              <button
-                type="button"
-                className="btn-ghost"
-                onClick={onExploreArchitecture}
-              >
-                VIEW ROSTER →
-              </button>
+              {onExploreArchitecture && (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={onExploreArchitecture}
+                >
+                  VIEW ROSTER →
+                </button>
+              )}
             </div>
           </div>
 

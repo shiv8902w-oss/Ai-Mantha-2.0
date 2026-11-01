@@ -5,15 +5,15 @@ import { StatementFold } from './components/StatementFold';
 import { ReleasesSection } from './components/ReleasesSection';
 import { LiveBciDecoderDemo } from './components/LiveBciDecoderDemo';
 import { BciVirtualInterface } from './components/BciVirtualInterface';
-import { RosterSection } from './components/RosterSection';
-import { DatesTableSection } from './components/DatesTableSection';
 import { CloseSection } from './components/CloseSection';
+import { BookingModal } from './components/BookingModal';
 import { DashboardPage } from './components/DashboardPage';
 import { EegDenoiserPage } from './components/EegDenoiserPage';
 import { FluidCursor } from './components/FluidCursor';
 
 export const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<'home' | 'dashboard' | 'denoiser'>('home');
+  const [isBookingOpen, setIsBookingOpen] = useState<boolean>(false);
 
   const scrollToSection = useCallback((id: string) => {
     const el = document.getElementById(id);
@@ -55,7 +55,6 @@ export const App: React.FC = () => {
 
           {/* Section 3: Releases & Pipeline Sleeves (Two columns, physical throwable card deck) */}
           <ReleasesSection
-            onExploreArchitecture={() => scrollToSection('roster')}
             onLaunchVirtualInterface={() => scrollToSection('bci-lab')}
             onOpenDenoiser={() => handleNavigate('denoiser')}
           />
@@ -66,14 +65,14 @@ export const App: React.FC = () => {
           {/* Section 4: Interactive BCI Virtual Interface Prototype (Problem Statement 3 Core Demo) */}
           <BciVirtualInterface />
 
-          {/* Section 5: Roster (Hairline-ruled rows, display-face names, right-aligned metrics) */}
-          <RosterSection />
+          {/* Section 5: Close (Headline, fine-print, buttons, hairline footer strip, cropped wordmark) */}
+          <CloseSection onOpenBooking={() => setIsBookingOpen(true)} />
 
-          {/* Section 6: Validation Dates & Benchmark Matrix Table (Collapsible on mobile) */}
-          <DatesTableSection />
-
-          {/* Section 7: Close (Headline, fine-print, buttons, hairline footer strip, cropped wordmark) */}
-          <CloseSection />
+          {/* Booking / Pre-order Modal */}
+          <BookingModal
+            isOpen={isBookingOpen}
+            onClose={() => setIsBookingOpen(false)}
+          />
         </main>
       )}
 

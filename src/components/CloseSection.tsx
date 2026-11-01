@@ -1,6 +1,11 @@
 import React from 'react';
+import { ShoppingBag, ArrowRight } from 'lucide-react';
 
-export const CloseSection: React.FC = () => {
+interface CloseSectionProps {
+  onOpenBooking?: () => void;
+}
+
+export const CloseSection: React.FC<CloseSectionProps> = ({ onOpenBooking }) => {
   return (
     <footer className="close-section" role="contentinfo" aria-label="Closing Summary">
       <div className="close-container">
@@ -16,6 +21,19 @@ export const CloseSection: React.FC = () => {
           </div>
 
           <div className="close-buttons">
+            {onOpenBooking && (
+              <button
+                type="button"
+                className="btn-buy-now-pulse"
+                onClick={onOpenBooking}
+                aria-label="Buy Now / Book Hardware Kit"
+              >
+                <ShoppingBag size={14} className="buy-now-icon" />
+                <span>BUY NOW // BOOK HARDWARE KIT</span>
+                <ArrowRight size={13} />
+              </button>
+            )}
+
             <button
               type="button"
               className="btn-primary-outline"
@@ -37,6 +55,32 @@ export const CloseSection: React.FC = () => {
               DOWNLOAD BCI DATASET →
             </button>
           </div>
+        </div>
+
+        {/* Dedicated Pre-Order / Booking Callout Strip at the End of the Page */}
+        <div className="close-booking-strip">
+          <div className="booking-strip-left">
+            <div className="strip-badge-wrap">
+              <span className="meta-accent-dot pulse" />
+              <span className="strip-badge font-mono">BATCH 01 ALLOCATION OPEN</span>
+            </div>
+            <h3 className="strip-title">NEUROSYNC SENSORIMOTOR HARDWARE KITS</h3>
+            <p className="strip-subtitle">
+              Ready-to-deploy hardware with calibrated C3/Cz/C4 dry leads, low-latency BLE streamer, and embedded 1D-CNN artifact suppression.
+            </p>
+          </div>
+
+          {onOpenBooking && (
+            <button
+              type="button"
+              className="btn-buy-now-accent"
+              onClick={onOpenBooking}
+            >
+              <span className="meta-accent-dot" />
+              <span>BUY NOW / RESERVE SLOT</span>
+              <ArrowRight size={14} />
+            </button>
+          )}
         </div>
 
         {/* Hairline Footer Strip */}
