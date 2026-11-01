@@ -19,6 +19,7 @@ import {
   Layers,
   Sparkles
 } from 'lucide-react';
+import { initClientDenoiser, denoiseFullSignalClient } from '../utils/clientDenoiser';
 
 interface EegDenoiserPageProps {
   onReturnHome: () => void;
@@ -91,14 +92,24 @@ export const EegDenoiserPage: React.FC<EegDenoiserPageProps> = ({ onReturnHome, 
     setJumpInputValue(String(activeFileIndex + 1));
   }, [activeFileIndex]);
 
-  // Check backend server status on mount
+  // Check backend server status on mount (with GitHub Pages client-side neural engine fallback)
   useEffect(() => {
     let isMounted = true;
     const checkBackend = async () => {
       try {
         const res = await fetch('/api/health');
-        if (res.ok && isMounted) setBackendOnline(true);
-        else if (isMounted) setBackendOnline(false);
+        if (res.ok && isMounted) {
+          setBackendOnline(true);
+          return;
+        }
+      } catch {
+        // Fallback to client-side model below
+      }
+
+      // If /api/health is unavailable (e.g. on GitHub Pages), initialize client-side 1D-CNN neural weights
+      try {
+        await initClientDenoiser();
+        if (isMounted) setBackendOnline(true);
       } catch {
         if (isMounted) setBackendOnline(false);
       }
@@ -509,23 +520,34 @@ export const EegDenoiserPage: React.FC<EegDenoiserPageProps> = ({ onReturnHome, 
       setTimeout(() => setProcessingStatusText("Applying 6-Layer Dilated Convolutions..."), 320);
       setTimeout(() => setProcessingStatusText("Generating Denoised Output..."), 450);
 
-      const response = await fetch('/api/denoise', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signal: rawInput })
-      });
+      let cleanedSignal: number[] = [];
+      let latencyMs = 3.8;
 
-      if (!response.ok) {
-        throw new Error(`Model server returned HTTP ${response.status}: ${response.statusText}`);
+      try {
+        const response = await fetch('/api/denoise', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ signal: rawInput })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'success' && data.cleaned_signal) {
+            cleanedSignal = data.cleaned_signal;
+            latencyMs = data.inference_latency_ms || 3.8;
+          } else {
+            throw new Error(data.error || 'Server error');
+          }
+        } else {
+          throw new Error(`Server returned HTTP ${response.status}`);
+        }
+      } catch {
+        // Seamless fallback to in-browser 1D-CNN neural engine (GitHub Pages static mode!)
+        const clientRes = await denoiseFullSignalClient(rawInput);
+        cleanedSignal = clientRes.cleaned_signal;
+        latencyMs = clientRes.inference_latency_ms;
+        setBackendOnline(true);
       }
-
-      const data = await response.json();
-      if (data.status !== 'success' || !data.cleaned_signal) {
-        throw new Error(data.error || "Model inference returned unexpected format.");
-      }
-
-      const cleanedSignal: number[] = data.cleaned_signal;
-      const latencyMs: number = data.inference_latency_ms || 3.8;
 
       let sumRawSq = 0, sumCleanSq = 0, sumNoiseSq = 0, maxRaw = 0, maxClean = 0;
       for (let i = 0; i < n; i++) {
@@ -595,48 +617,68 @@ export const EegDenoiserPage: React.FC<EegDenoiserPageProps> = ({ onReturnHome, 
         const chunk = uploadedFiles.slice(i, i + chunkSize);
         const batchSignals = chunk.map(f => f.samples);
 
-        const response = await fetch('/api/denoise', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ signals: batchSignals })
-        });
+        let cleanedBatch: number[][] = [];
+        let avgLatencyMs = 3.8;
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.status === 'success' && data.cleaned_signals) {
-            data.cleaned_signals.forEach((cleanedSignal: number[], idx: number) => {
-              const fileIdx = i + idx;
-              const rawInput = updatedFiles[fileIdx].samples;
-              const n = rawInput.length;
-              let sumRawSq = 0, sumCleanSq = 0, sumNoiseSq = 0, maxRaw = 0, maxClean = 0;
-              for (let k = 0; k < n; k++) {
-                const r = rawInput[k];
-                const c = cleanedSignal[k] !== undefined ? cleanedSignal[k] : r;
-                const noise = r - c;
-                sumRawSq += r * r;
-                sumCleanSq += c * c;
-                sumNoiseSq += noise * noise;
-                if (Math.abs(r) > maxRaw) maxRaw = Math.abs(r);
-                if (Math.abs(c) > maxClean) maxClean = Math.abs(c);
-              }
+        try {
+          const response = await fetch('/api/denoise', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ signals: batchSignals })
+          });
 
-              updatedFiles[fileIdx] = {
-                ...updatedFiles[fileIdx],
-                cleanedSamples: cleanedSignal,
-                metrics: {
-                  inputRms: Math.round(Math.sqrt(sumRawSq / n) * 100) / 100,
-                  outputRms: Math.round(Math.sqrt(sumCleanSq / n) * 100) / 100,
-                  inputPeak: Math.round(maxRaw * 100) / 100,
-                  outputPeak: Math.round(maxClean * 100) / 100,
-                  noiseRms: Math.round(Math.sqrt(sumNoiseSq / n) * 100) / 100,
-                  latencyMs: data.avg_latency_ms || 3.8
-                },
-                status: 'cleaned',
-                errorMessage: null
-              };
-            });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success' && data.cleaned_signals) {
+              cleanedBatch = data.cleaned_signals;
+              avgLatencyMs = data.avg_latency_ms || 3.8;
+            }
           }
+        } catch {
+          // Handled by in-browser fallback below
         }
+
+        if (cleanedBatch.length === 0) {
+          // Process chunk via client-side neural engine (GitHub Pages static mode!)
+          for (const s of batchSignals) {
+            const cr = await denoiseFullSignalClient(s);
+            cleanedBatch.push(cr.cleaned_signal);
+            avgLatencyMs = cr.inference_latency_ms;
+          }
+          setBackendOnline(true);
+        }
+
+        cleanedBatch.forEach((cleanedSignal: number[], idx: number) => {
+          const fileIdx = i + idx;
+          const rawInput = updatedFiles[fileIdx].samples;
+          const n = rawInput.length;
+          let sumRawSq = 0, sumCleanSq = 0, sumNoiseSq = 0, maxRaw = 0, maxClean = 0;
+          for (let k = 0; k < n; k++) {
+            const r = rawInput[k];
+            const c = cleanedSignal[k] !== undefined ? cleanedSignal[k] : r;
+            const noise = r - c;
+            sumRawSq += r * r;
+            sumCleanSq += c * c;
+            sumNoiseSq += noise * noise;
+            if (Math.abs(r) > maxRaw) maxRaw = Math.abs(r);
+            if (Math.abs(c) > maxClean) maxClean = Math.abs(c);
+          }
+
+          updatedFiles[fileIdx] = {
+            ...updatedFiles[fileIdx],
+            cleanedSamples: cleanedSignal,
+            metrics: {
+              inputRms: Math.round(Math.sqrt(sumRawSq / n) * 100) / 100,
+              outputRms: Math.round(Math.sqrt(sumCleanSq / n) * 100) / 100,
+              inputPeak: Math.round(maxRaw * 100) / 100,
+              outputPeak: Math.round(maxClean * 100) / 100,
+              noiseRms: Math.round(Math.sqrt(sumNoiseSq / n) * 100) / 100,
+              latencyMs: avgLatencyMs
+            },
+            status: 'cleaned',
+            errorMessage: null
+          };
+        });
         setBatchProgress({ current: Math.min(i + chunkSize, totalSignals), total: totalSignals });
       }
 
